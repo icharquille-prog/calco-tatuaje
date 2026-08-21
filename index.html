@@ -622,12 +622,55 @@ $("save").disabled=false;
    iPhone + Android + PC
 ========================================== */
 
-$("save").onclick = async () => {
+$("save").onclick = () => {
 
-c.toBlob(async blob => {
+    const imagenCalco = c.toDataURL("image/png");
 
-if (!blob) return;
+    const nuevaVentana = window.open();
 
+    if (nuevaVentana) {
+
+        nuevaVentana.document.write(`
+            <!doctype html>
+            <html>
+            <head>
+                <meta name="viewport"
+                content="width=device-width,initial-scale=1">
+                <title>Calco Tattoo</title>
+
+                <style>
+                    body {
+                        margin: 0;
+                        background: white;
+                        display: flex;
+                        justify-content: center;
+                        align-items: flex-start;
+                    }
+
+                    img {
+                        width: 100%;
+                        height: auto;
+                    }
+                </style>
+            </head>
+
+            <body>
+
+                <img src="${imagenCalco}">
+
+            </body>
+            </html>
+        `);
+
+        nuevaVentana.document.close();
+
+    } else {
+
+        window.location.href = imagenCalco;
+
+    }
+
+};
 
 /* CREAR ARCHIVO PNG */
 
