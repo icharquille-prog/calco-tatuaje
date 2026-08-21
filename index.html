@@ -2,88 +2,796 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+
 <meta name="theme-color" content="#111111">
+
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Calco Tattoo">
+
 <link rel="manifest" href="manifest.json">
+
 <title>Calco Tattoo</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f2f2f2;color:#151515;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-header{background:#111;color:#fff;text-align:center;padding:17px;font-size:22px;font-weight:800}
-main{max-width:900px;margin:auto;padding:16px}.card{background:#fff;border-radius:18px;padding:18px;box-shadow:0 4px 20px #0002}
-input[type=file]{width:100%;padding:11px;border:1px solid #ccc;border-radius:10px}
-.control{margin-top:17px}.line{display:flex;justify-content:space-between;font-weight:700;margin-bottom:6px}
-.value{color:#c40000}input[type=range]{width:100%;accent-color:#c40000}
-.buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:20px}
-button{border:0;border-radius:12px;padding:15px;background:#c40000;color:#fff;font-weight:800;font-size:15px}
-button.secondary{background:#222}button:disabled{opacity:.45}
-.preview{margin-top:18px;padding:8px;border:1px solid #ddd;border-radius:14px;background:#fff}
-canvas{display:block;max-width:100%;height:auto;margin:auto}
-small{display:block;color:#666;margin-top:10px;line-height:1.4}
-@media(max-width:600px){.buttons{grid-template-columns:1fr}}
+
+*{
+box-sizing:border-box
+}
+
+body{
+margin:0;
+background:#f2f2f2;
+color:#151515;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif
+}
+
+header{
+background:#111;
+color:#fff;
+text-align:center;
+padding:17px;
+font-size:22px;
+font-weight:800
+}
+
+main{
+max-width:900px;
+margin:auto;
+padding:16px
+}
+
+.card{
+background:#fff;
+border-radius:18px;
+padding:18px;
+box-shadow:0 4px 20px #0002
+}
+
+input[type=file]{
+width:100%;
+padding:11px;
+border:1px solid #ccc;
+border-radius:10px
+}
+
+.control{
+margin-top:17px
+}
+
+.line{
+display:flex;
+justify-content:space-between;
+font-weight:700;
+margin-bottom:6px
+}
+
+.value{
+color:#c40000
+}
+
+input[type=range]{
+width:100%;
+accent-color:#c40000
+}
+
+.buttons{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:20px
+}
+
+button{
+border:0;
+border-radius:12px;
+padding:15px;
+background:#c40000;
+color:#fff;
+font-weight:800;
+font-size:15px
+}
+
+button.secondary{
+background:#222
+}
+
+button:disabled{
+opacity:.45
+}
+
+.preview{
+margin-top:18px;
+padding:8px;
+border:1px solid #ddd;
+border-radius:14px;
+background:#fff
+}
+
+canvas{
+display:block;
+max-width:100%;
+height:auto;
+margin:auto
+}
+
+small{
+display:block;
+color:#666;
+margin-top:10px;
+line-height:1.4
+}
+
+@media(max-width:600px){
+
+.buttons{
+grid-template-columns:1fr
+}
+
+}
+
 </style>
+
 </head>
+
 <body>
-<header>CALCO TATTOO</header>
-<main><section class="card">
+
+<header>
+CALCO TATTOO
+</header>
+
+<main>
+
+<section class="card">
+
 <input id="file" type="file" accept="image/*">
 
-<div class="control"><div class="line"><span>Fidelidad</span><span id="fv" class="value">90%</span></div>
-<input id="f" type="range" min="0" max="100" value="90"></div>
+<div class="control">
 
-<div class="control"><div class="line"><span>Detalle</span><span id="dv" class="value">50%</span></div>
-<input id="d" type="range" min="0" max="100" value="50"></div>
+<div class="line">
 
-<div class="control"><div class="line"><span>Sombras</span><span id="sv" class="value">10%</span></div>
-<input id="s" type="range" min="0" max="100" value="10"></div>
+<span>Fidelidad</span>
 
-<div class="buttons">
-<button id="go" disabled>GENERAR CALCO</button>
-<button id="save" class="secondary" disabled>GUARDAR CALCO</button>
+<span id="fv" class="value">
+90%
+</span>
+
 </div>
 
-<div class="preview"><canvas id="c"></canvas></div>
-<small>Calco de líneas rojas sobre fondo blanco. Ajusta Fidelidad para conservar contornos, Detalle para líneas internas y Sombras para recuperar detalles de zonas oscuras.</small>
-</section></main>
+<input id="f" type="range" min="0" max="100" value="90">
+
+</div>
+
+
+<div class="control">
+
+<div class="line">
+
+<span>Detalle</span>
+
+<span id="dv" class="value">
+50%
+</span>
+
+</div>
+
+<input id="d" type="range" min="0" max="100" value="50">
+
+</div>
+
+
+<div class="control">
+
+<div class="line">
+
+<span>Sombras</span>
+
+<span id="sv" class="value">
+10%
+</span>
+
+</div>
+
+<input id="s" type="range" min="0" max="100" value="10">
+
+</div>
+
+
+<div class="buttons">
+
+<button id="go" disabled>
+GENERAR CALCO
+</button>
+
+<button id="save" class="secondary" disabled>
+GUARDAR CALCO
+</button>
+
+</div>
+
+
+<div class="preview">
+
+<canvas id="c"></canvas>
+
+</div>
+
+
+<small>
+
+Calco de líneas rojas sobre fondo blanco.
+Ajusta Fidelidad para conservar contornos,
+Detalle para líneas internas y Sombras para recuperar
+detalles de zonas oscuras.
+
+</small>
+
+</section>
+
+</main>
+
 
 <script>
-const $=id=>document.getElementById(id), file=$("file"), c=$("c"), ctx=c.getContext("2d",{willReadFrequently:true});
-const src=document.createElement("canvas"), sx=src.getContext("2d",{willReadFrequently:true});
-let ready=false;
-[["f","fv"],["d","dv"],["s","sv"]].forEach(([a,b])=>$(a).oninput=()=>$(b).textContent=$(a).value+"%");
+
+const $ = id => document.getElementById(id);
+
+const file = $("file");
+
+const c = $("c");
+
+const ctx = c.getContext("2d",{
+willReadFrequently:true
+});
+
+
+const src = document.createElement("canvas");
+
+const sx = src.getContext("2d",{
+willReadFrequently:true
+});
+
+
+let ready = false;
+
+
+/* CONTROLES */
+
+[
+["f","fv"],
+["d","dv"],
+["s","sv"]
+
+].forEach(([a,b])=>{
+
+$(a).oninput=()=>{
+
+$(b).textContent=$(a).value+"%";
+
+};
+
+});
+
+
+/* CARGAR IMAGEN */
+
 file.onchange=()=>{
- const f=file.files[0]; if(!f)return;
- const im=new Image();
- im.onload=()=>{
-  const scale=Math.min(1,1800/Math.max(im.naturalWidth,im.naturalHeight));
-  src.width=Math.round(im.naturalWidth*scale); src.height=Math.round(im.naturalHeight*scale);
-  sx.fillStyle="#fff";sx.fillRect(0,0,src.width,src.height);sx.drawImage(im,0,0,src.width,src.height);
-  c.width=src.width;c.height=src.height;ctx.drawImage(src,0,0);ready=true;$("go").disabled=false;$("save").disabled=true;
- };
- im.src=URL.createObjectURL(f);
+
+const f=file.files[0];
+
+if(!f)return;
+
+
+const im=new Image();
+
+
+im.onload=()=>{
+
+
+const scale=Math.min(
+
+1,
+
+1800/Math.max(
+im.naturalWidth,
+im.naturalHeight
+)
+
+);
+
+
+src.width=Math.round(
+im.naturalWidth*scale
+);
+
+
+src.height=Math.round(
+im.naturalHeight*scale
+);
+
+
+/* GUARDAR ORIGINAL EN CANVAS INTERNO */
+
+sx.fillStyle="#fff";
+
+sx.fillRect(
+0,
+0,
+src.width,
+src.height
+);
+
+
+sx.drawImage(
+
+im,
+
+0,
+0,
+
+src.width,
+src.height
+
+);
+
+
+/* MOSTRAR ORIGINAL */
+
+c.width=src.width;
+
+c.height=src.height;
+
+ctx.drawImage(src,0,0);
+
+
+ready=true;
+
+
+$("go").disabled=false;
+
+$("save").disabled=true;
+
+
 };
-function gray(a,i){return .299*a[i]+.587*a[i+1]+.114*a[i+2]}
+
+
+im.src=URL.createObjectURL(f);
+
+
+};
+
+
+/* ESCALA DE GRISES */
+
+function gray(a,i){
+
+return
+
+.299*a[i]+
+.587*a[i+1]+
+.114*a[i+2];
+
+}
+
+
+/* GENERAR CALCO */
+
 $("go").onclick=()=>{
- if(!ready)return;
- const w=src.width,h=src.height,a=sx.getImageData(0,0,w,h).data,o=ctx.createImageData(w,h),d=o.data;
- for(let i=0;i<d.length;i+=4){d[i]=255;d[i+1]=255;d[i+2]=255;d[i+3]=255}
- const F=+$("f").value,D=+$("d").value,S=+$("s").value;
- const threshold=Math.max(28,150-F*.62-D*.34);
- const shadowLimit=threshold+(100-S)*1.05;
- for(let y=1;y<h-1;y++)for(let x=1;x<w-1;x++){
-  const p=(y*w+x)*4;
-  const A=gray(a,p-4*w-4),B=gray(a,p-4*w),C=gray(a,p-4*w+4),
-        E=gray(a,p-4),G=gray(a,p+4),H=gray(a,p+4*w-4),
-        I=gray(a,p+4*w),J=gray(a,p+4*w+4),Q=gray(a,p);
-  const gx=-A+C-2*E+2*G-H+J, gy=-A-2*B-C+H+2*I+J;
-  const mag=Math.hypot(gx,gy), mean=(A+B+C+E+Q+G+H+I+J)/9, contrast=Math.abs(Q-mean);
-  if(mag>(contrast>25?threshold:shadowLimit)){d[p]=201;d[p+1]=0;d[p+2]=0;d[p+3]=255}
- }
- ctx.putImageData(o,0,0);$("save").disabled=false;
+
+
+if(!ready)return;
+
+
+const w=src.width;
+
+const h=src.height;
+
+
+const a=sx.getImageData(
+
+0,
+0,
+w,
+h
+
+).data;
+
+
+const o=ctx.createImageData(
+
+w,
+h
+
+);
+
+
+const d=o.data;
+
+
+/* FONDO BLANCO */
+
+for(
+
+let i=0;
+
+i<d.length;
+
+i+=4
+
+){
+
+d[i]=255;
+
+d[i+1]=255;
+
+d[i+2]=255;
+
+d[i+3]=255;
+
+}
+
+
+/* VALORES DE CONTROLES */
+
+const F=+$("f").value;
+
+const D=+$("d").value;
+
+const S=+$("s").value;
+
+
+/* UMBRALES */
+
+const threshold=Math.max(
+
+28,
+
+150-F*.62-D*.34
+
+);
+
+
+const shadowLimit=
+
+threshold+(100-S)*1.05;
+
+
+/* DETECCION DE BORDES */
+
+for(
+
+let y=1;
+
+y<h-1;
+
+y++
+
+)
+
+for(
+
+let x=1;
+
+x<w-1;
+
+x++
+
+){
+
+
+const p=(y*w+x)*4;
+
+
+const
+
+A=gray(a,p-4*w-4),
+
+B=gray(a,p-4*w),
+
+C=gray(a,p-4*w+4),
+
+E=gray(a,p-4),
+
+G=gray(a,p+4),
+
+H=gray(a,p+4*w-4),
+
+I=gray(a,p+4*w),
+
+J=gray(a,p+4*w+4),
+
+Q=gray(a,p);
+
+
+/* SOBEL */
+
+const gx=
+
+-A+C
+
+-2*E
+
++2*G
+
+-H+J;
+
+
+const gy=
+
+-A
+
+-2*B
+
+-C
+
++H
+
++2*I
+
++J;
+
+
+/* MAGNITUD */
+
+const mag=Math.hypot(
+
+gx,
+gy
+
+);
+
+
+const mean=(
+
+A+B+C+
+
+E+Q+G+
+
+H+I+J
+
+)/9;
+
+
+const contrast=
+
+Math.abs(
+
+Q-mean
+
+);
+
+
+/* DIBUJAR LINEA ROJA */
+
+if(
+
+mag>(
+
+contrast>25
+
+?
+
+threshold
+
+:
+
+shadowLimit
+
+)
+
+){
+
+d[p]=201;
+
+d[p+1]=0;
+
+d[p+2]=0;
+
+d[p+3]=255;
+
+}
+
+
+}
+
+
+/* MOSTRAR CALCO */
+
+ctx.putImageData(
+
+o,
+
+0,
+
+0
+
+);
+
+
+/* ACTIVAR GUARDADO */
+
+$("save").disabled=false;
+
+
 };
-$("save").onclick=()=>{const a=document.createElement("a");a.download="calco-tatuaje.png";a.href=c.toDataURL("image/png");a.click()};
-if("serviceWorker"in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
+
+
+/* ==========================================
+   GUARDAR EL CALCO GENERADO
+   iPhone + Android + PC
+========================================== */
+
+$("save").onclick = async () => {
+
+c.toBlob(async blob => {
+
+if (!blob) return;
+
+
+/* CREAR ARCHIVO PNG */
+
+const archivo = new File(
+
+[blob],
+
+"calco-tatuaje.png",
+
+{
+
+type:"image/png"
+
+}
+
+);
+
+
+/* iPHONE / MOVIL */
+
+if(
+
+navigator.canShare &&
+
+navigator.canShare({
+
+files:[archivo]
+
+})
+
+){
+
+try{
+
+
+await navigator.share({
+
+title:"Calco Tattoo",
+
+text:"Calco generado",
+
+files:[archivo]
+
+});
+
+
+}
+
+catch(error){
+
+console.log(
+
+"Guardado cancelado"
+
+);
+
+}
+
+
+}
+
+
+/* PC O NAVEGADOR SIN SHARE */
+
+else{
+
+
+const url=
+
+URL.createObjectURL(
+
+blob
+
+);
+
+
+const enlace=
+
+document.createElement(
+
+"a"
+
+);
+
+
+enlace.href=url;
+
+
+enlace.download=
+
+"calco-tatuaje.png";
+
+
+document.body.appendChild(
+
+enlace
+
+);
+
+
+enlace.click();
+
+
+enlace.remove();
+
+
+setTimeout(
+
+()=>{
+
+URL.revokeObjectURL(
+
+url
+
+);
+
+},
+
+1000
+
+);
+
+
+}
+
+
+},
+
+"image/png"
+
+);
+
+
+};
+
+
+/* SERVICE WORKER */
+
+if(
+
+"serviceWorker" in navigator
+
+){
+
+window.addEventListener(
+
+"load",
+
+()=>{
+
+navigator.serviceWorker.register(
+
+"sw.js"
+
+);
+
+}
+
+);
+
+}
+
 </script>
-</body></html>
+
+</body>
+
+</html>
