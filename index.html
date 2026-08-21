@@ -12,7 +12,9 @@
 <title>Calco Tattoo</title>
 
 <style>
-*{box-sizing:border-box}
+*{
+    box-sizing:border-box;
+}
 
 body{
     margin:0;
@@ -50,7 +52,9 @@ input[type=file]{
     border-radius:10px;
 }
 
-.control{margin-top:17px}
+.control{
+    margin-top:17px;
+}
 
 .line{
     display:flex;
@@ -59,7 +63,9 @@ input[type=file]{
     margin-bottom:6px;
 }
 
-.value{color:#c40000}
+.value{
+    color:#c40000;
+}
 
 input[type=range]{
     width:100%;
@@ -81,14 +87,14 @@ button{
     color:#fff;
     font-weight:800;
     font-size:15px;
-    cursor:pointer;
 }
 
-button.secondary{background:#222}
+button.secondary{
+    background:#222;
+}
 
 button:disabled{
     opacity:.45;
-    cursor:not-allowed;
 }
 
 .preview{
@@ -114,7 +120,9 @@ small{
 }
 
 @media(max-width:600px){
-    .buttons{grid-template-columns:1fr}
+    .buttons{
+        grid-template-columns:1fr;
+    }
 }
 </style>
 </head>
@@ -163,8 +171,6 @@ small{
 
 <small>
 Calco de líneas rojas sobre fondo blanco.
-Ajusta Fidelidad para conservar contornos, Detalle para líneas internas
-y Sombras para recuperar detalles de zonas oscuras.
 </small>
 
 </section>
@@ -172,97 +178,123 @@ y Sombras para recuperar detalles de zonas oscuras.
 
 <script>
 
-const $ = id => document.getElementById(id);
+const fileInput = document.getElementById("file");
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d", {
+    willReadFrequently: true
+});
 
-const file = $("file");
-const canvas = $("c");
-const ctx = canvas.getContext("2d",{willReadFrequently:true});
+const sourceCanvas = document.createElement("canvas");
+const sourceCtx = sourceCanvas.getContext("2d", {
+    willReadFrequently: true
+});
 
-const src = document.createElement("canvas");
-const sx = src.getContext("2d",{willReadFrequently:true});
+const generateButton = document.getElementById("go");
+const saveButton = document.getElementById("save");
 
-let ready = false;
+let imageLoaded = false;
 let calcoGenerado = false;
-let objectURL = null;
 
 
 /* CONTROLES */
 
-[
-    ["f","fv"],
-    ["d","dv"],
-    ["s","sv"]
-].forEach(([control,valor])=>{
-    $(control).addEventListener("input",()=>{
-        $(valor).textContent = $(control).value + "%";
-    });
-});
+const fControl = document.getElementById("f");
+const dControl = document.getElementById("d");
+const sControl = document.getElementById("s");
+
+const fv = document.getElementById("fv");
+const dv = document.getElementById("dv");
+const sv = document.getElementById("sv");
+
+fControl.oninput = function(){
+    fv.textContent = this.value + "%";
+};
+
+dControl.oninput = function(){
+    dv.textContent = this.value + "%";
+};
+
+sControl.oninput = function(){
+    sv.textContent = this.value + "%";
+};
 
 
 /* CARGAR IMAGEN */
 
-file.addEventListener("change",()=>{
+fileInput.addEventListener("change", function(){
 
-    const archivo = file.files[0];
+    const archivo = fileInput.files[0];
 
     if(!archivo) return;
 
-    const imageURL = URL.createObjectURL(archivo);
-    const im = new Image();
+    const imagen = new Image();
 
-    im.onload = ()=>{
+    imagen.onload = function(){
+
+        const maxSize = 1200;
 
         const escala = Math.min(
             1,
-            1800 / Math.max(im.naturalWidth,im.naturalHeight)
+            maxSize / Math.max(
+                imagen.naturalWidth,
+                imagen.naturalHeight
+            )
         );
 
-        src.width = Math.round(im.naturalWidth * escala);
-        src.height = Math.round(im.naturalHeight * escala);
-
-        sx.clearRect(0,0,src.width,src.height);
-
-        sx.drawImage(
-            im,
-            0,
-            0,
-            src.width,
-            src.height
+        const ancho = Math.round(
+            imagen.naturalWidth * escala
         );
 
-        canvas.width = src.width;
-        canvas.height = src.height;
+        const alto = Math.round(
+            imagen.naturalHeight * escala
+        );
 
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.drawImage(src,0,0);
 
-        ready = true;
+        sourceCanvas.width = ancho;
+        sourceCanvas.height = alto;
+
+        sourceCtx.drawImage(
+            imagen,
+            0,
+            0,
+            ancho,
+            alto
+        );
+
+
+        canvas.width = ancho;
+        canvas.height = alto;
+
+        ctx.drawImage(
+            imagen,
+            0,
+            0,
+            ancho,
+            alto
+        );
+
+
+        imageLoaded = true;
         calcoGenerado = false;
 
-        $("go").disabled = false;
-        $("save").disabled = true;
+        generateButton.disabled = false;
+        saveButton.disabled = true;
 
-        URL.revokeObjectURL(imageURL);
     };
 
-    im.onerror = ()=>{
-        URL.revokeObjectURL(imageURL);
-        alert("No se pudo cargar la imagen.");
-    };
-
-    im.src = imageURL;
+    imagen.src = URL.createObjectURL(archivo);
 
 });
 
 
-/* ESCALA DE GRISES */
+/* CONVERTIR PIXEL A GRIS */
 
-function gray(datos,indice){
+function gris(data, index){
 
     return (
-        0.299 * datos[indice] +
-        0.587 * datos[indice+1] +
-        0.114 * datos[indice+2]
+        data[index] * 0.299 +
+        data[index + 1] * 0.587 +
+        data[index + 2] * 0.114
     );
 
 }
@@ -270,225 +302,306 @@ function gray(datos,indice){
 
 /* GENERAR CALCO */
 
-$("go").addEventListener("click",()=>{
+generateButton.addEventListener("click", function(){
 
-    if(!ready) return;
+    if(!imageLoaded) return;
 
-    $("go").disabled = true;
-    $("go").textContent = "GENERANDO...";
 
-    setTimeout(()=>{
+    const ancho = sourceCanvas.width;
+    const alto = sourceCanvas.height;
 
-        try{
 
-            const w = src.width;
-            const h = src.height;
+    const imagenOriginal =
+        sourceCtx.getImageData(
+            0,
+            0,
+            ancho,
+            alto
+        );
 
-            const original = sx.getImageData(0,0,w,h).data;
-            const resultado = ctx.createImageData(w,h);
-            const datos = resultado.data;
 
-            for(let i=0;i<datos.length;i+=4){
-                datos[i] = 255;
-                datos[i+1] = 255;
-                datos[i+2] = 255;
-                datos[i+3] = 255;
+    const entrada =
+        imagenOriginal.data;
+
+
+    const salidaImagen =
+        ctx.createImageData(
+            ancho,
+            alto
+        );
+
+
+    const salida =
+        salidaImagen.data;
+
+
+    /* FONDO BLANCO */
+
+    for(
+        let i = 0;
+        i < salida.length;
+        i += 4
+    ){
+
+        salida[i] = 255;
+        salida[i + 1] = 255;
+        salida[i + 2] = 255;
+        salida[i + 3] = 255;
+
+    }
+
+
+    const fidelidad =
+        Number(fControl.value);
+
+    const detalle =
+        Number(dControl.value);
+
+    const sombras =
+        Number(sControl.value);
+
+
+    /* UMBRAL */
+
+    let umbral =
+        260
+        - fidelidad * 1.5
+        - detalle * 0.8
+        - sombras * 0.3;
+
+
+    if(umbral < 40){
+        umbral = 40;
+    }
+
+
+    /* SOBEL */
+
+    for(
+        let y = 1;
+        y < alto - 1;
+        y++
+    ){
+
+        for(
+            let x = 1;
+            x < ancho - 1;
+            x++
+        ){
+
+            const p =
+                (y * ancho + x) * 4;
+
+
+            const p1 =
+                gris(
+                    entrada,
+                    p - ancho * 4 - 4
+                );
+
+            const p2 =
+                gris(
+                    entrada,
+                    p - ancho * 4
+                );
+
+            const p3 =
+                gris(
+                    entrada,
+                    p - ancho * 4 + 4
+                );
+
+            const p4 =
+                gris(
+                    entrada,
+                    p - 4
+                );
+
+            const p6 =
+                gris(
+                    entrada,
+                    p + 4
+                );
+
+            const p7 =
+                gris(
+                    entrada,
+                    p + ancho * 4 - 4
+                );
+
+            const p8 =
+                gris(
+                    entrada,
+                    p + ancho * 4
+                );
+
+            const p9 =
+                gris(
+                    entrada,
+                    p + ancho * 4 + 4
+                );
+
+
+            const gx =
+
+                -p1 + p3
+                -2 * p4
+                +2 * p6
+                -p7
+                +p9;
+
+
+            const gy =
+
+                -p1
+                -2 * p2
+                -p3
+                +p7
+                +2 * p8
+                +p9;
+
+
+            const intensidad =
+                Math.abs(gx) +
+                Math.abs(gy);
+
+
+            if(
+                intensidad > umbral
+            ){
+
+                salida[p] = 201;
+                salida[p + 1] = 0;
+                salida[p + 2] = 0;
+                salida[p + 3] = 255;
+
             }
 
-            const F = Number($("f").value);
-            const D = Number($("d").value);
-            const S = Number($("s").value);
-
-            const threshold = Math.max(
-                28,
-                150 - F * 0.62 - D * 0.34
-            );
-
-            const shadowLimit =
-                threshold + (100-S) * 1.05;
-
-            for(let y=1;y<h-1;y++){
-
-                for(let x=1;x<w-1;x++){
-
-                    const p = (y*w+x)*4;
-
-                    const A = gray(original,p-4*w-4);
-                    const B = gray(original,p-4*w);
-                    const C = gray(original,p-4*w+4);
-
-                    const E = gray(original,p-4);
-                    const G = gray(original,p+4);
-
-                    const H = gray(original,p+4*w-4);
-                    const I = gray(original,p+4*w);
-                    const J = gray(original,p+4*w+4);
-
-                    const Q = gray(original,p);
-
-                    const gx =
-                        -A + C
-                        -2*E + 2*G
-                        -H + J;
-
-                    const gy =
-                        -A -2*B -C
-                        +H +2*I +J;
-
-                    const mag = Math.hypot(gx,gy);
-
-                    const mean =
-                        (A+B+C+E+Q+G+H+I+J)/9;
-
-                    const contrast =
-                        Math.abs(Q-mean);
-
-                    const limite =
-                        contrast > 25
-                        ? threshold
-                        : shadowLimit;
-
-                    if(mag > limite){
-
-                        datos[p] = 201;
-                        datos[p+1] = 0;
-                        datos[p+2] = 0;
-                        datos[p+3] = 255;
-
-                    }
-
-                }
-
-            }
-
-            ctx.putImageData(resultado,0,0);
-
-            calcoGenerado = true;
-
-            $("save").disabled = false;
-
-        }
-        catch(error){
-
-            console.error(error);
-            alert("Ocurrió un error al generar el calco.");
-
-        }
-        finally{
-
-            $("go").disabled = false;
-            $("go").textContent = "GENERAR CALCO";
-
         }
 
-    },50);
+    }
+
+
+    /* MOSTRAR CALCO */
+
+    ctx.putImageData(
+        salidaImagen,
+        0,
+        0
+    );
+
+
+    calcoGenerado = true;
+
+    saveButton.disabled = false;
 
 });
 
 
-/* CREAR PNG DEL CALCO */
-
-function crearBlobCalco(){
-
-    return new Promise((resolve,reject)=>{
-
-        canvas.toBlob(blob=>{
-
-            if(blob){
-                resolve(blob);
-            }else{
-                reject(
-                    new Error("No se pudo crear el PNG.")
-                );
-            }
-
-        },"image/png");
-
-    });
-
-}
-
-
 /* GUARDAR CALCO */
 
-$("save").addEventListener("click",async()=>{
+saveButton.addEventListener("click", function(){
 
     if(!calcoGenerado){
-        alert("Primero debes generar el calco.");
-        return;
-    }
 
-    try{
-
-        const blob = await crearBlobCalco();
-
-        const archivo = new File(
-            [blob],
-            "calco-tatuaje.png",
-            {type:"image/png"}
+        alert(
+            "Primero genera el calco."
         );
 
+        return;
 
-        /* MÉTODO PRINCIPAL:
-           COMPARTIR EL ARCHIVO PNG */
-
-        if(
-            navigator.share &&
-            navigator.canShare &&
-            navigator.canShare({files:[archivo]})
-        ){
-
-            await navigator.share({
-                title:"Calco Tattoo",
-                files:[archivo]
-            });
-
-            return;
-        }
+    }
 
 
-        /* MÉTODO PARA PC */
+    canvas.toBlob(
+        function(blob){
 
-        if(objectURL){
-            URL.revokeObjectURL(objectURL);
-        }
+            if(!blob){
 
-        objectURL = URL.createObjectURL(blob);
+                alert(
+                    "No se pudo crear el archivo."
+                );
 
-        const enlace =
-            document.createElement("a");
+                return;
 
-        enlace.href = objectURL;
-        enlace.download = "calco-tatuaje.png";
-
-        document.body.appendChild(enlace);
-        enlace.click();
-        enlace.remove();
-
-
-        setTimeout(()=>{
-            if(objectURL){
-                URL.revokeObjectURL(objectURL);
-                objectURL = null;
             }
-        },5000);
 
-    }
-    catch(error){
 
-        console.error("Error al guardar:",error);
+            const archivo = new File(
+                [blob],
+                "calco-tatuaje.png",
+                {
+                    type:"image/png"
+                }
+            );
 
-        /*
-        FALLBACK:
-        abrir exclusivamente el PNG del canvas
-        */
 
-        const dataURL =
-            canvas.toDataURL("image/png");
+            /* iPHONE / ANDROID */
 
-        window.location.assign(dataURL);
+            if(
+                navigator.share &&
+                navigator.canShare &&
+                navigator.canShare({
+                    files:[archivo]
+                })
+            ){
 
-    }
+                navigator.share({
+                    title:"Calco Tattoo",
+                    files:[archivo]
+                })
+                .catch(function(error){
+
+                    console.log(error);
+
+                });
+
+                return;
+
+            }
+
+
+            /* PC */
+
+            const url =
+                URL.createObjectURL(blob);
+
+
+            const enlace =
+                document.createElement("a");
+
+
+            enlace.href = url;
+
+            enlace.download =
+                "calco-tatuaje.png";
+
+
+            document.body.appendChild(
+                enlace
+            );
+
+
+            enlace.click();
+
+
+            enlace.remove();
+
+
+            setTimeout(
+                function(){
+
+                    URL.revokeObjectURL(
+                        url
+                    );
+
+                },
+                1000
+            );
+
+        },
+        "image/png"
+    );
 
 });
 
@@ -497,18 +610,16 @@ $("save").addEventListener("click",async()=>{
 
 if("serviceWorker" in navigator){
 
-    window.addEventListener("load",()=>{
+    window.addEventListener(
+        "load",
+        function(){
 
-        navigator.serviceWorker
-            .register("./sw.js")
-            .catch(error=>{
-                console.error(
-                    "Error Service Worker:",
-                    error
-                );
-            });
+            navigator.serviceWorker.register(
+                "./sw.js"
+            );
 
-    });
+        }
+    );
 
 }
 
