@@ -1,4 +1,4 @@
-const CACHE_NAME = "calco-tattoo-v5";
+const CACHE_NAME = "calco-tattoo-v7";
 
 const APP_SHELL = [
   "./",
