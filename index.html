@@ -376,111 +376,171 @@ generateButton.addEventListener("click", function(){
 
 
     /* SOBEL */
+/* SOBEL + REDUCCIÓN DE RUIDO */
 
-    for(
-        let y = 1;
-        y < alto - 1;
-        y++
-    ){
-
-        for(
-            let x = 1;
-            x < ancho - 1;
-            x++
-        ){
-
-            const p =
-                (y * ancho + x) * 4;
+const mapaBordes = new Uint8Array(
+    ancho * alto
+);
 
 
-            const p1 =
-                gris(
-                    entrada,
-                    p - ancho * 4 - 4
-                );
+/* PRIMERA PASADA:
+   DETECTAR BORDES */
 
-            const p2 =
-                gris(
-                    entrada,
-                    p - ancho * 4
-                );
+for(let y = 1; y < alto - 1; y++){
 
-            const p3 =
-                gris(
-                    entrada,
-                    p - ancho * 4 + 4
-                );
+    for(let x = 1; x < ancho - 1; x++){
 
-            const p4 =
-                gris(
-                    entrada,
-                    p - 4
-                );
-
-            const p6 =
-                gris(
-                    entrada,
-                    p + 4
-                );
-
-            const p7 =
-                gris(
-                    entrada,
-                    p + ancho * 4 - 4
-                );
-
-            const p8 =
-                gris(
-                    entrada,
-                    p + ancho * 4
-                );
-
-            const p9 =
-                gris(
-                    entrada,
-                    p + ancho * 4 + 4
-                );
+        const p =
+            (y * ancho + x) * 4;
 
 
-            const gx =
+        const p1 = gris(
+            entrada,
+            p - ancho * 4 - 4
+        );
 
-                -p1 + p3
-                -2 * p4
-                +2 * p6
-                -p7
-                +p9;
+        const p2 = gris(
+            entrada,
+            p - ancho * 4
+        );
+
+        const p3 = gris(
+            entrada,
+            p - ancho * 4 + 4
+        );
+
+        const p4 = gris(
+            entrada,
+            p - 4
+        );
+
+        const p6 = gris(
+            entrada,
+            p + 4
+        );
+
+        const p7 = gris(
+            entrada,
+            p + ancho * 4 - 4
+        );
+
+        const p8 = gris(
+            entrada,
+            p + ancho * 4
+        );
+
+        const p9 = gris(
+            entrada,
+            p + ancho * 4 + 4
+        );
 
 
-            const gy =
+        const gx =
 
-                -p1
-                -2 * p2
-                -p3
-                +p7
-                +2 * p8
-                +p9;
-
-
-            const intensidad =
-                Math.abs(gx) +
-                Math.abs(gy);
+            -p1 + p3
+            - 2 * p4
+            + 2 * p6
+            - p7
+            + p9;
 
 
-            if(
-                intensidad > umbral
-            ){
+        const gy =
 
-                salida[p] = 201;
-                salida[p + 1] = 0;
-                salida[p + 2] = 0;
-                salida[p + 3] = 255;
+            -p1
+            - 2 * p2
+            - p3
+            + p7
+            + 2 * p8
+            + p9;
 
-            }
+
+        const intensidad =
+            Math.abs(gx) +
+            Math.abs(gy);
+
+
+        if(intensidad > umbral){
+
+            mapaBordes[
+                y * ancho + x
+            ] = 1;
 
         }
 
     }
 
+}
+
+
+/* SEGUNDA PASADA:
+   ELIMINAR PÍXELES AISLADOS */
+
+for(let y = 1; y < alto - 1; y++){
+
+    for(let x = 1; x < ancho - 1; x++){
+
+        const indice =
+            y * ancho + x;
+
+
+        if(mapaBordes[indice] !== 1){
+            continue;
+        }
+
+
+        let vecinos = 0;
+
+
+        for(let dy = -1; dy <= 1; dy++){
+
+            for(let dx = -1; dx <= 1; dx++){
+
+                if(dx === 0 && dy === 0){
+                    continue;
+                }
+
+
+                const vecino =
+                    (y + dy) * ancho +
+                    (x + dx);
+
+
+                if(mapaBordes[vecino] === 1){
+
+                    vecinos++;
+
+                }
+
+            }
+
+        }
+
+
+        /*
+        Si tiene pocos vecinos,
+        probablemente es ruido.
+        */
+
+        if(vecinos >= 2){
+
+            const p =
+                indice * 4;
+
+
+            salida[p] = 201;
+
+            salida[p + 1] = 0;
+
+            salida[p + 2] = 0;
+
+            salida[p + 3] = 255;
+
+        }
+
+    }
+
+}
+   
 
     /* MOSTRAR CALCO */
 
