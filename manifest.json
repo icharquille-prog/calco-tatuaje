@@ -1,0 +1,9 @@
+{
+  "name":"Calco Tattoo",
+  "short_name":"Calco Tattoo",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f2f2f2",
+  "theme_color":"#111111",
+  "lang":"es"
+}
