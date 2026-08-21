@@ -1,17 +1,39 @@
 <!doctype html>
 <html lang="es">
+
 <head>
+
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#111111">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Calco Tattoo">
-<link rel="manifest" href="manifest.json">
+
+<meta
+name="viewport"
+content="width=device-width,initial-scale=1,viewport-fit=cover">
+
+<meta
+name="theme-color"
+content="#111111">
+
+<meta
+name="apple-mobile-web-app-capable"
+content="yes">
+
+<meta
+name="apple-mobile-web-app-status-bar-style"
+content="black-translucent">
+
+<meta
+name="apple-mobile-web-app-title"
+content="Calco Tattoo">
+
+<link
+rel="manifest"
+href="manifest.json">
 
 <title>Calco Tattoo</title>
 
+
 <style>
+
 *{
     box-sizing:border-box;
 }
@@ -20,7 +42,12 @@ body{
     margin:0;
     background:#f2f2f2;
     color:#151515;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Arial,
+        sans-serif;
 }
 
 header{
@@ -87,6 +114,7 @@ button{
     color:#fff;
     font-weight:800;
     font-size:15px;
+    cursor:pointer;
 }
 
 button.secondary{
@@ -95,6 +123,7 @@ button.secondary{
 
 button:disabled{
     opacity:.45;
+    cursor:not-allowed;
 }
 
 .preview{
@@ -103,6 +132,7 @@ button:disabled{
     border:1px solid #ddd;
     border-radius:14px;
     background:#fff;
+    overflow:hidden;
 }
 
 canvas{
@@ -120,209 +150,560 @@ small{
 }
 
 @media(max-width:600px){
+
     .buttons{
         grid-template-columns:1fr;
     }
+
 }
+
 </style>
+
 </head>
+
 
 <body>
 
-<header>CALCO TATTOO</header>
+
+<header>
+CALCO TATTOO
+</header>
+
 
 <main>
+
 <section class="card">
 
-<input id="file" type="file" accept="image/*">
+
+<input
+id="file"
+type="file"
+accept="image/*">
+
 
 <div class="control">
-    <div class="line">
-        <span>Fidelidad</span>
-        <span id="fv" class="value">90%</span>
-    </div>
-    <input id="f" type="range" min="0" max="100" value="90">
+
+<div class="line">
+
+<span>
+Fidelidad
+</span>
+
+<span
+id="fv"
+class="value">
+
+90%
+
+</span>
+
 </div>
 
-<div class="control">
-    <div class="line">
-        <span>Detalle</span>
-        <span id="dv" class="value">50%</span>
-    </div>
-    <input id="d" type="range" min="0" max="100" value="50">
+<input
+id="f"
+type="range"
+min="0"
+max="100"
+value="90">
+
 </div>
 
+
+
 <div class="control">
-    <div class="line">
-        <span>Sombras</span>
-        <span id="sv" class="value">10%</span>
-    </div>
-    <input id="s" type="range" min="0" max="100" value="10">
+
+<div class="line">
+
+<span>
+Detalle
+</span>
+
+<span
+id="dv"
+class="value">
+
+50%
+
+</span>
+
 </div>
+
+<input
+id="d"
+type="range"
+min="0"
+max="100"
+value="50">
+
+</div>
+
+
+
+<div class="control">
+
+<div class="line">
+
+<span>
+Sombras
+</span>
+
+<span
+id="sv"
+class="value">
+
+10%
+
+</span>
+
+</div>
+
+<input
+id="s"
+type="range"
+min="0"
+max="100"
+value="10">
+
+</div>
+
+
 
 <div class="buttons">
-    <button id="go" disabled>GENERAR CALCO</button>
-    <button id="save" class="secondary" disabled>GUARDAR CALCO</button>
+
+<button
+id="go"
+disabled>
+
+GENERAR CALCO
+
+</button>
+
+
+<button
+id="save"
+class="secondary"
+disabled>
+
+GUARDAR CALCO
+
+</button>
+
 </div>
+
+
 
 <div class="preview">
-    <canvas id="c"></canvas>
+
+<canvas
+id="c">
+
+</canvas>
+
 </div>
 
+
 <small>
+
 Calco de líneas rojas sobre fondo blanco.
+
 </small>
 
+
 </section>
+
 </main>
+
+
 
 <script>
 
-const fileInput = document.getElementById("file");
-const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d", {
-    willReadFrequently: true
-});
 
-const sourceCanvas = document.createElement("canvas");
-const sourceCtx = sourceCanvas.getContext("2d", {
-    willReadFrequently: true
-});
+/* =================================
+   ELEMENTOS
+================================= */
 
-const generateButton = document.getElementById("go");
-const saveButton = document.getElementById("save");
+const fileInput =
+    document.getElementById("file");
+
+
+const canvas =
+    document.getElementById("c");
+
+
+const ctx =
+    canvas.getContext(
+        "2d",
+        {
+            willReadFrequently:true
+        }
+    );
+
+
+const sourceCanvas =
+    document.createElement("canvas");
+
+
+const sourceCtx =
+    sourceCanvas.getContext(
+        "2d",
+        {
+            willReadFrequently:true
+        }
+    );
+
+
+const generateButton =
+    document.getElementById("go");
+
+
+const saveButton =
+    document.getElementById("save");
+
+
+const fControl =
+    document.getElementById("f");
+
+
+const dControl =
+    document.getElementById("d");
+
+
+const sControl =
+    document.getElementById("s");
+
+
+const fv =
+    document.getElementById("fv");
+
+
+const dv =
+    document.getElementById("dv");
+
+
+const sv =
+    document.getElementById("sv");
+
 
 let imageLoaded = false;
+
 let calcoGenerado = false;
 
 
-/* CONTROLES */
+/* =================================
+   CONTROLES
+================================= */
 
-const fControl = document.getElementById("f");
-const dControl = document.getElementById("d");
-const sControl = document.getElementById("s");
+fControl.addEventListener(
+    "input",
+    function(){
 
-const fv = document.getElementById("fv");
-const dv = document.getElementById("dv");
-const sv = document.getElementById("sv");
+        fv.textContent =
+            this.value + "%";
 
-fControl.oninput = function(){
-    fv.textContent = this.value + "%";
-};
-
-dControl.oninput = function(){
-    dv.textContent = this.value + "%";
-};
-
-sControl.oninput = function(){
-    sv.textContent = this.value + "%";
-};
+    }
+);
 
 
-/* CARGAR IMAGEN */
+dControl.addEventListener(
+    "input",
+    function(){
 
-fileInput.addEventListener("change", function(){
+        dv.textContent =
+            this.value + "%";
 
-    const archivo = fileInput.files[0];
-
-    if(!archivo) return;
-
-    const imagen = new Image();
-
-    imagen.onload = function(){
-
-        const maxSize = 1200;
-
-        const escala = Math.min(
-            1,
-            maxSize / Math.max(
-                imagen.naturalWidth,
-                imagen.naturalHeight
-            )
-        );
-
-        const ancho = Math.round(
-            imagen.naturalWidth * escala
-        );
-
-        const alto = Math.round(
-            imagen.naturalHeight * escala
-        );
+    }
+);
 
 
-        sourceCanvas.width = ancho;
-        sourceCanvas.height = alto;
+sControl.addEventListener(
+    "input",
+    function(){
 
-        sourceCtx.drawImage(
-            imagen,
-            0,
-            0,
-            ancho,
-            alto
-        );
+        sv.textContent =
+            this.value + "%";
 
-
-        canvas.width = ancho;
-        canvas.height = alto;
-
-        ctx.drawImage(
-            imagen,
-            0,
-            0,
-            ancho,
-            alto
-        );
+    }
+);
 
 
-        imageLoaded = true;
-        calcoGenerado = false;
+/* =================================
+   CARGAR IMAGEN
+================================= */
 
-        generateButton.disabled = false;
-        saveButton.disabled = true;
-
-    };
-
-    imagen.src = URL.createObjectURL(archivo);
-
-});
+fileInput.addEventListener(
+    "change",
+    function(){
 
 
-/* CONVERTIR PIXEL A GRIS */
+        const archivo =
+            fileInput.files[0];
 
-function gris(data, index){
+
+        if(!archivo){
+
+            return;
+
+        }
+
+
+        const imagen =
+            new Image();
+
+
+        const imageURL =
+            URL.createObjectURL(
+                archivo
+            );
+
+
+        imagen.onload =
+            function(){
+
+
+                const maxSize =
+                    1200;
+
+
+                const escala =
+                    Math.min(
+
+                        1,
+
+                        maxSize /
+                        Math.max(
+                            imagen.naturalWidth,
+                            imagen.naturalHeight
+                        )
+
+                    );
+
+
+                const ancho =
+                    Math.round(
+                        imagen.naturalWidth *
+                        escala
+                    );
+
+
+                const alto =
+                    Math.round(
+                        imagen.naturalHeight *
+                        escala
+                    );
+
+
+                /* CANVAS ORIGINAL */
+
+                sourceCanvas.width =
+                    ancho;
+
+
+                sourceCanvas.height =
+                    alto;
+
+
+                sourceCtx.clearRect(
+                    0,
+                    0,
+                    ancho,
+                    alto
+                );
+
+
+                sourceCtx.drawImage(
+
+                    imagen,
+
+                    0,
+                    0,
+
+                    ancho,
+                    alto
+
+                );
+
+
+                /* MOSTRAR ORIGINAL */
+
+                canvas.width =
+                    ancho;
+
+
+                canvas.height =
+                    alto;
+
+
+                ctx.clearRect(
+                    0,
+                    0,
+                    ancho,
+                    alto
+                );
+
+
+                ctx.drawImage(
+
+                    imagen,
+
+                    0,
+                    0,
+
+                    ancho,
+                    alto
+
+                );
+
+
+                imageLoaded = true;
+
+
+                calcoGenerado = false;
+
+
+                generateButton.disabled =
+                    false;
+
+
+                saveButton.disabled =
+                    true;
+
+
+                URL.revokeObjectURL(
+                    imageURL
+                );
+
+            };
+
+
+        imagen.onerror =
+            function(){
+
+                URL.revokeObjectURL(
+                    imageURL
+                );
+
+                alert(
+                    "No se pudo cargar la imagen."
+                );
+
+            };
+
+
+        imagen.src =
+            imageURL;
+
+    }
+);
+
+
+/* =================================
+   CONVERTIR A GRIS
+================================= */
+
+function gris(
+    data,
+    index
+){
 
     return (
-        data[index] * 0.299 +
-        data[index + 1] * 0.587 +
+
+        data[index] * 0.299
+
+        +
+
+        data[index + 1] * 0.587
+
+        +
+
         data[index + 2] * 0.114
+
     );
 
 }
 
 
-/* GENERAR CALCO */
+/* =================================
+   GENERAR CALCO
+================================= */
 
-generateButton.addEventListener("click", function(){
+generateButton.addEventListener(
+    "click",
+    function(){
 
-    if(!imageLoaded) return;
+
+        if(!imageLoaded){
+
+            return;
+
+        }
 
 
-    const ancho = sourceCanvas.width;
-    const alto = sourceCanvas.height;
+        generateButton.disabled =
+            true;
+
+
+        generateButton.textContent =
+            "GENERANDO...";
+
+
+        /*
+        Permite actualizar la interfaz
+        antes de procesar la imagen
+        */
+
+        setTimeout(
+            function(){
+
+                generarCalco();
+
+                generateButton.disabled =
+                    false;
+
+                generateButton.textContent =
+                    "GENERAR CALCO";
+
+            },
+            20
+        );
+
+    }
+);
+
+
+/* =================================
+   ALGORITMO DEL CALCO
+================================= */
+
+function generarCalco(){
+
+
+    const ancho =
+        sourceCanvas.width;
+
+
+    const alto =
+        sourceCanvas.height;
 
 
     const imagenOriginal =
         sourceCtx.getImageData(
+
             0,
             0,
+
             ancho,
             alto
+
         );
 
 
     const entrada =
         imagenOriginal.data;
 
+
+    /* =============================
+       CREAR IMAGEN DE SALIDA
+    ============================= */
 
     const salidaImagen =
         ctx.createImageData(
@@ -338,352 +719,761 @@ generateButton.addEventListener("click", function(){
     /* FONDO BLANCO */
 
     for(
+
         let i = 0;
+
         i < salida.length;
+
         i += 4
+
     ){
 
-        salida[i] = 255;
-        salida[i + 1] = 255;
-        salida[i + 2] = 255;
-        salida[i + 3] = 255;
+        salida[i] =
+            255;
+
+        salida[i + 1] =
+            255;
+
+        salida[i + 2] =
+            255;
+
+        salida[i + 3] =
+            255;
 
     }
 
+
+    /* =============================
+       VALORES DE CONTROLES
+    ============================= */
 
     const fidelidad =
-        Number(fControl.value);
+        Number(
+            fControl.value
+        );
+
 
     const detalle =
-        Number(dControl.value);
+        Number(
+            dControl.value
+        );
+
 
     const sombras =
-        Number(sControl.value);
+        Number(
+            sControl.value
+        );
 
 
-    /* UMBRAL */
+    /* =============================
+       UMBRAL
+
+       Fidelidad alta:
+       detecta más líneas.
+
+       Detalle alto:
+       recupera detalles internos.
+
+       Sombras:
+       permite recuperar información
+       de zonas oscuras.
+    ============================= */
 
     let umbral =
-        260
-        - fidelidad * 1.5
-        - detalle * 0.8
-        - sombras * 0.3;
+
+        320
+
+        - fidelidad * 1.45
+
+        - detalle * 0.70
+
+        - sombras * 0.25;
 
 
-    if(umbral < 40){
-        umbral = 40;
+    if(
+
+        umbral < 65
+
+    ){
+
+        umbral = 65;
+
     }
 
 
-    /* SOBEL */
-/* SOBEL + REDUCCIÓN DE RUIDO */
+    /* =============================
+       MAPA DE BORDES
+    ============================= */
 
-const mapaBordes = new Uint8Array(
-    ancho * alto
+    const mapaBordes =
+        new Uint8Array(
+            ancho * alto
+        );
+
+
+    /* =============================
+       PRIMERA PASADA
+
+       DETECCIÓN SOBEL
+    ============================= */
+
+    for(
+
+        let y = 1;
+
+        y < alto - 1;
+
+        y++
+
+    ){
+
+        for(
+
+            let x = 1;
+
+            x < ancho - 1;
+
+            x++
+
+        ){
+
+
+            const p =
+                (y * ancho + x) * 4;
+
+
+            const p1 =
+                gris(
+                    entrada,
+                    p - ancho * 4 - 4
+                );
+
+
+            const p2 =
+                gris(
+                    entrada,
+                    p - ancho * 4
+                );
+
+
+            const p3 =
+                gris(
+                    entrada,
+                    p - ancho * 4 + 4
+                );
+
+
+            const p4 =
+                gris(
+                    entrada,
+                    p - 4
+                );
+
+
+            const p6 =
+                gris(
+                    entrada,
+                    p + 4
+                );
+
+
+            const p7 =
+                gris(
+                    entrada,
+                    p + ancho * 4 - 4
+                );
+
+
+            const p8 =
+                gris(
+                    entrada,
+                    p + ancho * 4
+                );
+
+
+            const p9 =
+                gris(
+                    entrada,
+                    p + ancho * 4 + 4
+                );
+
+
+            /* SOBEL */
+
+            const gx =
+
+                -p1
+
+                + p3
+
+                - 2 * p4
+
+                + 2 * p6
+
+                - p7
+
+                + p9;
+
+
+            const gy =
+
+                -p1
+
+                - 2 * p2
+
+                - p3
+
+                + p7
+
+                + 2 * p8
+
+                + p9;
+
+
+            const intensidad =
+
+                Math.abs(gx)
+
+                +
+
+                Math.abs(gy);
+
+
+            if(
+
+                intensidad >
+                umbral
+
+            ){
+
+                mapaBordes[
+                    y * ancho + x
+                ] = 1;
+
+            }
+
+        }
+
+    }
+
+
+    /* =============================
+       SEGUNDA PASADA
+
+       ELIMINAR PÍXELES AISLADOS
+    ============================= */
+
+    const mapaLimpio =
+        new Uint8Array(
+            ancho * alto
+        );
+
+
+    for(
+
+        let y = 1;
+
+        y < alto - 1;
+
+        y++
+
+    ){
+
+        for(
+
+            let x = 1;
+
+            x < ancho - 1;
+
+            x++
+
+        ){
+
+
+            const indice =
+                y * ancho + x;
+
+
+            if(
+
+                mapaBordes[indice] !== 1
+
+            ){
+
+                continue;
+
+            }
+
+
+            let vecinos = 0;
+
+
+            for(
+
+                let dy = -1;
+
+                dy <= 1;
+
+                dy++
+
+            ){
+
+                for(
+
+                    let dx = -1;
+
+                    dx <= 1;
+
+                    dx++
+
+                ){
+
+
+                    if(
+
+                        dx === 0 &&
+                        dy === 0
+
+                    ){
+
+                        continue;
+
+                    }
+
+
+                    const vecino =
+
+                        (y + dy) *
+                        ancho
+
+                        +
+
+                        (x + dx);
+
+
+                    if(
+
+                        mapaBordes[
+                            vecino
+                        ] === 1
+
+                    ){
+
+                        vecinos++;
+
+                    }
+
+                }
+
+            }
+
+
+            /*
+            Conserva líneas continuas.
+            Elimina puntos aislados.
+            */
+
+            if(
+
+                vecinos >= 2
+
+            ){
+
+                mapaLimpio[
+                    indice
+                ] = 1;
+
+            }
+
+        }
+
+    }
+
+
+    /* =============================
+       TERCERA PASADA
+
+       FILTRO DE CONTINUIDAD
+    ============================= */
+
+    for(
+
+        let y = 1;
+
+        y < alto - 1;
+
+        y++
+
+    ){
+
+        for(
+
+            let x = 1;
+
+            x < ancho - 1;
+
+            x++
+
+        ){
+
+
+            const indice =
+                y * ancho + x;
+
+
+            if(
+
+                mapaLimpio[
+                    indice
+                ] !== 1
+
+            ){
+
+                continue;
+
+            }
+
+
+            let vecinos = 0;
+
+
+            for(
+
+                let dy = -1;
+
+                dy <= 1;
+
+                dy++
+
+            ){
+
+                for(
+
+                    let dx = -1;
+
+                    dx <= 1;
+
+                    dx++
+
+                ){
+
+
+                    if(
+
+                        dx === 0 &&
+                        dy === 0
+
+                    ){
+
+                        continue;
+
+                    }
+
+
+                    const vecino =
+
+                        (y + dy) *
+                        ancho
+
+                        +
+
+                        (x + dx);
+
+
+                    if(
+
+                        mapaLimpio[
+                            vecino
+                        ] === 1
+
+                    ){
+
+                        vecinos++;
+
+                    }
+
+                }
+
+            }
+
+
+            /*
+            Dibujar solamente
+            líneas con continuidad
+            */
+
+            if(
+
+                vecinos >= 2
+
+            ){
+
+
+                const p =
+                    indice * 4;
+
+
+                /* ROJO */
+
+                salida[p] =
+                    201;
+
+                salida[p + 1] =
+                    0;
+
+                salida[p + 2] =
+                    0;
+
+                salida[p + 3] =
+                    255;
+
+            }
+
+        }
+
+    }
+
+
+    /* =============================
+       MOSTRAR CALCO
+    ============================= */
+
+    ctx.putImageData(
+
+        salidaImagen,
+
+        0,
+
+        0
+
+    );
+
+
+    calcoGenerado =
+        true;
+
+
+    saveButton.disabled =
+        false;
+
+}
+
+
+/* =================================
+   GUARDAR CALCO
+================================= */
+
+saveButton.addEventListener(
+    "click",
+    function(){
+
+
+        if(
+
+            !calcoGenerado
+
+        ){
+
+            alert(
+                "Primero genera el calco."
+            );
+
+            return;
+
+        }
+
+
+        canvas.toBlob(
+
+            function(blob){
+
+
+                if(
+
+                    !blob
+
+                ){
+
+                    alert(
+                        "No se pudo crear el archivo."
+                    );
+
+                    return;
+
+                }
+
+
+                const archivo =
+                    new File(
+
+                        [blob],
+
+                        "calco-tatuaje.png",
+
+                        {
+
+                            type:
+                                "image/png"
+
+                        }
+
+                    );
+
+
+                /* =====================
+                   COMPARTIR EN MÓVIL
+                ===================== */
+
+                if(
+
+                    navigator.share
+
+                    &&
+
+                    navigator.canShare
+
+                    &&
+
+                    navigator.canShare({
+
+                        files:[
+                            archivo
+                        ]
+
+                    })
+
+                ){
+
+                    navigator.share({
+
+                        title:
+                            "Calco Tattoo",
+
+                        files:[
+                            archivo
+                        ]
+
+                    })
+
+                    .catch(
+                        function(error){
+
+                            console.log(
+                                error
+                            );
+
+                        }
+                    );
+
+                    return;
+
+                }
+
+
+                /* =====================
+                   DESCARGAR EN PC
+                ===================== */
+
+                const url =
+                    URL.createObjectURL(
+                        blob
+                    );
+
+
+                const enlace =
+                    document.createElement(
+                        "a"
+                    );
+
+
+                enlace.href =
+                    url;
+
+
+                enlace.download =
+                    "calco-tatuaje.png";
+
+
+                document.body.appendChild(
+                    enlace
+                );
+
+
+                enlace.click();
+
+
+                enlace.remove();
+
+
+                setTimeout(
+
+                    function(){
+
+                        URL.revokeObjectURL(
+                            url
+                        );
+
+                    },
+
+                    1000
+
+                );
+
+            },
+
+            "image/png"
+
+        );
+
+    }
 );
 
 
-/* PRIMERA PASADA:
-   DETECTAR BORDES */
+/* =================================
+   SERVICE WORKER
+================================= */
 
-for(let y = 1; y < alto - 1; y++){
+if(
 
-    for(let x = 1; x < ancho - 1; x++){
+    "serviceWorker" in navigator
 
-        const p =
-            (y * ancho + x) * 4;
-
-
-        const p1 = gris(
-            entrada,
-            p - ancho * 4 - 4
-        );
-
-        const p2 = gris(
-            entrada,
-            p - ancho * 4
-        );
-
-        const p3 = gris(
-            entrada,
-            p - ancho * 4 + 4
-        );
-
-        const p4 = gris(
-            entrada,
-            p - 4
-        );
-
-        const p6 = gris(
-            entrada,
-            p + 4
-        );
-
-        const p7 = gris(
-            entrada,
-            p + ancho * 4 - 4
-        );
-
-        const p8 = gris(
-            entrada,
-            p + ancho * 4
-        );
-
-        const p9 = gris(
-            entrada,
-            p + ancho * 4 + 4
-        );
-
-
-        const gx =
-
-            -p1 + p3
-            - 2 * p4
-            + 2 * p6
-            - p7
-            + p9;
-
-
-        const gy =
-
-            -p1
-            - 2 * p2
-            - p3
-            + p7
-            + 2 * p8
-            + p9;
-
-
-        const intensidad =
-            Math.abs(gx) +
-            Math.abs(gy);
-
-
-        if(intensidad > umbral){
-
-            mapaBordes[
-                y * ancho + x
-            ] = 1;
-
-        }
-
-    }
-
-}
-
-
-/* SEGUNDA PASADA:
-   ELIMINAR PÍXELES AISLADOS */
-
-for(let y = 1; y < alto - 1; y++){
-
-    for(let x = 1; x < ancho - 1; x++){
-
-        const indice =
-            y * ancho + x;
-
-
-        if(mapaBordes[indice] !== 1){
-            continue;
-        }
-
-
-        let vecinos = 0;
-
-
-        for(let dy = -1; dy <= 1; dy++){
-
-            for(let dx = -1; dx <= 1; dx++){
-
-                if(dx === 0 && dy === 0){
-                    continue;
-                }
-
-
-                const vecino =
-                    (y + dy) * ancho +
-                    (x + dx);
-
-
-                if(mapaBordes[vecino] === 1){
-
-                    vecinos++;
-
-                }
-
-            }
-
-        }
-
-
-        /*
-        Si tiene pocos vecinos,
-        probablemente es ruido.
-        */
-
-        if(vecinos >= 3){
-
-            const p =
-                indice * 4;
-
-
-            salida[p] = 201;
-
-            salida[p + 1] = 0;
-
-            salida[p + 2] = 0;
-
-            salida[p + 3] = 255;
-
-        }
-
-    }
-
-}
-   
-
-    /* MOSTRAR CALCO */
-
-    ctx.putImageData(
-        salidaImagen,
-        0,
-        0
-    );
-
-
-    calcoGenerado = true;
-
-    saveButton.disabled = false;
-
-});
-
-
-/* GUARDAR CALCO */
-
-saveButton.addEventListener("click", function(){
-
-    if(!calcoGenerado){
-
-        alert(
-            "Primero genera el calco."
-        );
-
-        return;
-
-    }
-
-
-    canvas.toBlob(
-        function(blob){
-
-            if(!blob){
-
-                alert(
-                    "No se pudo crear el archivo."
-                );
-
-                return;
-
-            }
-
-
-            const archivo = new File(
-                [blob],
-                "calco-tatuaje.png",
-                {
-                    type:"image/png"
-                }
-            );
-
-
-            /* iPHONE / ANDROID */
-
-            if(
-                navigator.share &&
-                navigator.canShare &&
-                navigator.canShare({
-                    files:[archivo]
-                })
-            ){
-
-                navigator.share({
-                    title:"Calco Tattoo",
-                    files:[archivo]
-                })
-                .catch(function(error){
-
-                    console.log(error);
-
-                });
-
-                return;
-
-            }
-
-
-            /* PC */
-
-            const url =
-                URL.createObjectURL(blob);
-
-
-            const enlace =
-                document.createElement("a");
-
-
-            enlace.href = url;
-
-            enlace.download =
-                "calco-tatuaje.png";
-
-
-            document.body.appendChild(
-                enlace
-            );
-
-
-            enlace.click();
-
-
-            enlace.remove();
-
-
-            setTimeout(
-                function(){
-
-                    URL.revokeObjectURL(
-                        url
-                    );
-
-                },
-                1000
-            );
-
-        },
-        "image/png"
-    );
-
-});
-
-
-/* SERVICE WORKER */
-
-if("serviceWorker" in navigator){
+){
 
     window.addEventListener(
+
         "load",
+
         function(){
 
-            navigator.serviceWorker.register(
-                "./sw.js"
-            );
+            navigator.serviceWorker
+
+                .register(
+                    "./sw.js"
+                )
+
+                .catch(
+
+                    function(error){
+
+                        console.log(
+                            "Error SW:",
+                            error
+                        );
+
+                    }
+
+                );
 
         }
+
     );
 
 }
+
 
 </script>
 
+
 </body>
+
 </html>
