@@ -1,3 +1,5 @@
+from pathlib import Path
+
 html = r'''<!doctype html>
 <html lang="es">
 <head>
@@ -9,9 +11,10 @@ html = r'''<!doctype html>
 <meta name="apple-mobile-web-app-title" content="Calco Tattoo">
 <link rel="manifest" href="manifest.json">
 <title>Calco Tattoo — AI Stencil</title>
+
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#eeeeee;color:#151515;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+body{margin:0;background:#eee;color:#151515;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
 header{background:#111;color:#fff;text-align:center;padding:18px 12px;font-size:22px;font-weight:900;letter-spacing:.5px}
 header small{display:block;margin-top:4px;color:#aaa;font-size:11px;font-weight:500}
 main{max-width:950px;margin:auto;padding:14px}
@@ -26,19 +29,21 @@ input[type=file]{width:100%;padding:12px;border:1px solid #ccc;border-radius:11p
 .value{color:#c40000}
 input[type=range]{width:100%;accent-color:#c40000}
 .buttons{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:20px}
-button{border:0;border-radius:12px;padding:15px;background:#c40000;color:#fff;font-weight:900;font-size:14px}
+button{border:0;border-radius:12px;padding:15px;background:#c40000;color:#fff;font-weight:900;font-size:14px;cursor:pointer}
 button.secondary{background:#222}
-button:disabled{opacity:.45}
+button:disabled{opacity:.45;cursor:not-allowed}
 .status{margin-top:12px;padding:11px;border-radius:10px;background:#f3f3f3;text-align:center;font-size:12px;font-weight:700;color:#666}
 .preview{margin-top:15px;padding:8px;border:1px solid #ddd;border-radius:14px;background:#fff;overflow:hidden}
-canvas{display:block;max-width:100%;height:auto;margin:auto}
+canvas{display:block;max-width:100%;height:auto;margin:auto;background:#fff}
 .compare{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .compare button{background:#222}
 .compare button.active{background:#c40000}
 small.info{display:block;color:#666;margin-top:10px;line-height:1.4}
+#imageInfo{margin-top:8px;font-size:11px;color:#777;text-align:center}
 @media(max-width:650px){.modes{grid-template-columns:1fr 1fr}.buttons{grid-template-columns:1fr}}
 </style>
 </head>
+
 <body>
 <header>
 CALCO TATTOO
@@ -46,9 +51,13 @@ CALCO TATTOO
 </header>
 
 <main>
+
 <section class="card">
 <div class="section-title">1. REFERENCIA</div>
-<input id="file" type="file" accept="image/*">
+
+<input id="file" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
+
+<div id="imageInfo"></div>
 </section>
 
 <section class="card">
@@ -64,20 +73,30 @@ CALCO TATTOO
 <section class="card">
 <div class="section-title">3. AJUSTES</div>
 
-<div class="control"><div class="line"><span>Fidelidad</span><span id="fv" class="value">90%</span></div>
-<input id="f" type="range" min="0" max="100" value="90"></div>
+<div class="control">
+<div class="line"><span>Fidelidad</span><span id="fv" class="value">90%</span></div>
+<input id="f" type="range" min="0" max="100" value="90">
+</div>
 
-<div class="control"><div class="line"><span>Detalle</span><span id="dv" class="value">70%</span></div>
-<input id="d" type="range" min="0" max="100" value="70"></div>
+<div class="control">
+<div class="line"><span>Detalle</span><span id="dv" class="value">70%</span></div>
+<input id="d" type="range" min="0" max="100" value="70">
+</div>
 
-<div class="control"><div class="line"><span>Líneas</span><span id="lv" class="value">70%</span></div>
-<input id="l" type="range" min="0" max="100" value="70"></div>
+<div class="control">
+<div class="line"><span>Líneas</span><span id="lv" class="value">70%</span></div>
+<input id="l" type="range" min="0" max="100" value="70">
+</div>
 
-<div class="control"><div class="line"><span>Sombras</span><span id="sv" class="value">15%</span></div>
-<input id="s" type="range" min="0" max="100" value="15"></div>
+<div class="control">
+<div class="line"><span>Sombras</span><span id="sv" class="value">15%</span></div>
+<input id="s" type="range" min="0" max="100" value="15">
+</div>
 
-<div class="control"><div class="line"><span>Limpieza</span><span id="cv" class="value">65%</span></div>
-<input id="c" type="range" min="0" max="100" value="65"></div>
+<div class="control">
+<div class="line"><span>Limpieza</span><span id="cv" class="value">65%</span></div>
+<input id="c" type="range" min="0" max="100" value="65">
+</div>
 
 <div class="buttons">
 <button type="button" id="go" disabled>GENERAR STENCIL</button>
@@ -89,329 +108,998 @@ CALCO TATTOO
 
 <section class="card">
 <div class="section-title">4. VISTA PREVIA</div>
+
 <div class="compare">
 <button type="button" id="originalButton">ORIGINAL</button>
 <button type="button" id="stencilButton" class="active">STENCIL</button>
 </div>
-<div class="preview"><canvas id="c"></canvas></div>
-<small class="info">El resultado está diseñado como plantilla de tatuaje: fondo blanco, líneas rojas y reducción del ruido fotográfico.</small>
+
+<div class="preview">
+<canvas id="c"></canvas>
+</div>
+
+<small class="info">
+Fondo blanco, líneas rojas y reducción del ruido fotográfico.
+</small>
 </section>
+
 </main>
 
 <script>
 "use strict";
 
-const fileInput=document.getElementById("file");
-const canvas=document.getElementById("c");
-const ctx=canvas.getContext("2d",{willReadFrequently:true});
-const sourceCanvas=document.createElement("canvas");
-const sourceCtx=sourceCanvas.getContext("2d",{willReadFrequently:true});
+/*
+ CALCO TATTOO V1
+ Carga robusta de imágenes para Chrome/iPhone.
+*/
 
-const generateButton=document.getElementById("go");
-const saveButton=document.getElementById("save");
-const statusBox=document.getElementById("status");
-const originalButton=document.getElementById("originalButton");
-const stencilButton=document.getElementById("stencilButton");
+const fileInput = document.getElementById("file");
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d", {willReadFrequently:true});
 
-const controls={
-  fidelidad:document.getElementById("f"),
-  detalle:document.getElementById("d"),
-  lineas:document.getElementById("l"),
-  sombras:document.getElementById("s"),
-  limpieza:document.getElementById("c")
+const sourceCanvas = document.createElement("canvas");
+const sourceCtx = sourceCanvas.getContext("2d", {willReadFrequently:true});
+
+const generateButton = document.getElementById("go");
+const saveButton = document.getElementById("save");
+const statusBox = document.getElementById("status");
+const imageInfo = document.getElementById("imageInfo");
+
+const originalButton = document.getElementById("originalButton");
+const stencilButton = document.getElementById("stencilButton");
+
+const controls = {
+    fidelidad: document.getElementById("f"),
+    detalle: document.getElementById("d"),
+    lineas: document.getElementById("l"),
+    sombras: document.getElementById("s"),
+    limpieza: document.getElementById("c")
 };
 
-const values={
-  fidelidad:document.getElementById("fv"),
-  detalle:document.getElementById("dv"),
-  lineas:document.getElementById("lv"),
-  sombras:document.getElementById("sv"),
-  limpieza:document.getElementById("cv")
+const values = {
+    fidelidad: document.getElementById("fv"),
+    detalle: document.getElementById("dv"),
+    lineas: document.getElementById("lv"),
+    sombras: document.getElementById("sv"),
+    limpieza: document.getElementById("cv")
 };
 
-let imagenCargada=false;
-let stencilGenerado=false;
-let modo="realism";
-let stencilImageData=null;
+let imagenCargada = false;
+let stencilGenerado = false;
+let modo = "realism";
+let stencilImageData = null;
 
-function actualizarValores(){
-  Object.keys(controls).forEach(nombre=>{
-    values[nombre].textContent=controls[nombre].value+"%";
-  });
+
+/* =========================================
+   CONTROLES
+========================================= */
+
+function actualizarValores() {
+    Object.keys(controls).forEach(function(nombre) {
+        values[nombre].textContent =
+            controls[nombre].value + "%";
+    });
 }
 
-Object.keys(controls).forEach(nombre=>{
-  controls[nombre].addEventListener("input",actualizarValores);
+Object.keys(controls).forEach(function(nombre) {
+    controls[nombre].addEventListener(
+        "input",
+        actualizarValores
+    );
 });
+
 actualizarValores();
 
-document.querySelectorAll(".mode").forEach(boton=>{
-  boton.addEventListener("click",()=>{
-    document.querySelectorAll(".mode").forEach(b=>b.classList.remove("active"));
-    boton.classList.add("active");
-    modo=boton.dataset.mode;
 
-    if(modo==="realism"){
-      controls.fidelidad.value=90; controls.detalle.value=70; controls.lineas.value=70;
-      controls.sombras.value=15; controls.limpieza.value=65;
-    }else if(modo==="ultra"){
-      controls.fidelidad.value=100; controls.detalle.value=95; controls.lineas.value=90;
-      controls.sombras.value=25; controls.limpieza.value=35;
-    }else if(modo==="linework"){
-      controls.fidelidad.value=95; controls.detalle.value=65; controls.lineas.value=100;
-      controls.sombras.value=0; controls.limpieza.value=80;
-    }else{
-      controls.fidelidad.value=80; controls.detalle.value=45; controls.lineas.value=75;
-      controls.sombras.value=5; controls.limpieza.value=95;
-    }
-    actualizarValores();
-  });
-});
+/* =========================================
+   MODOS
+========================================= */
 
-fileInput.addEventListener("change",()=>{
-  const archivo=fileInput.files && fileInput.files[0];
-  if(!archivo)return;
+document.querySelectorAll(".mode").forEach(function(boton) {
 
-  statusBox.textContent="Cargando referencia...";
-  generateButton.disabled=true;
-  saveButton.disabled=true;
-  imagenCargada=false;
-  stencilGenerado=false;
-  stencilImageData=null;
+    boton.addEventListener("click", function() {
 
-  const url=URL.createObjectURL(archivo);
-  const imagen=new Image();
+        document.querySelectorAll(".mode").forEach(function(b) {
+            b.classList.remove("active");
+        });
 
-  imagen.onload=()=>{
-    try{
-      const MAXIMO=1600;
-      const escala=Math.min(1,MAXIMO/Math.max(imagen.naturalWidth,imagen.naturalHeight));
-      const ancho=Math.max(1,Math.round(imagen.naturalWidth*escala));
-      const alto=Math.max(1,Math.round(imagen.naturalHeight*escala));
+        boton.classList.add("active");
+        modo = boton.dataset.mode;
 
-      sourceCanvas.width=ancho;
-      sourceCanvas.height=alto;
-      sourceCtx.clearRect(0,0,ancho,alto);
-      sourceCtx.drawImage(imagen,0,0,ancho,alto);
-
-      canvas.width=ancho;
-      canvas.height=alto;
-      ctx.clearRect(0,0,ancho,alto);
-      ctx.drawImage(sourceCanvas,0,0);
-
-      imagenCargada=true;
-      generateButton.disabled=false;
-      originalButton.classList.add("active");
-      stencilButton.classList.remove("active");
-      statusBox.textContent="Referencia cargada. Lista para generar.";
-    }catch(error){
-      console.error(error);
-      statusBox.textContent="Error procesando la fotografía.";
-    }finally{
-      URL.revokeObjectURL(url);
-    }
-  };
-
-  imagen.onerror=()=>{
-    URL.revokeObjectURL(url);
-    statusBox.textContent="No se pudo cargar la fotografía.";
-  };
-
-  imagen.src=url;
-});
-
-function gris(data,i){
-  return data[i]*0.299+data[i+1]*0.587+data[i+2]*0.114;
-}
-
-generateButton.addEventListener("click",()=>{
-  if(!imagenCargada)return;
-
-  generateButton.disabled=true;
-  saveButton.disabled=true;
-  generateButton.textContent="GENERANDO...";
-  statusBox.textContent="Analizando estructura, contornos y detalles...";
-
-  setTimeout(()=>{
-    try{
-      stencilImageData=generarStencil();
-      stencilGenerado=true;
-      ctx.putImageData(stencilImageData,0,0);
-
-      generateButton.disabled=false;
-      saveButton.disabled=false;
-      generateButton.textContent="GENERAR STENCIL";
-      originalButton.classList.remove("active");
-      stencilButton.classList.add("active");
-      statusBox.textContent="Stencil generado correctamente.";
-    }catch(error){
-      console.error("ERROR STENCIL:",error);
-      generateButton.disabled=false;
-      generateButton.textContent="GENERAR STENCIL";
-      statusBox.textContent="Error al generar el stencil.";
-    }
-  },50);
-});
-
-function generarStencil(){
-  const ancho=sourceCanvas.width;
-  const alto=sourceCanvas.height;
-
-  const original=sourceCtx.getImageData(0,0,ancho,alto);
-  const entrada=original.data;
-  const resultado=ctx.createImageData(ancho,alto);
-  const salida=resultado.data;
-
-  for(let i=0;i<salida.length;i+=4){
-    salida[i]=255;
-    salida[i+1]=255;
-    salida[i+2]=255;
-    salida[i+3]=255;
-  }
-
-  const fidelidad=Number(controls.fidelidad.value);
-  const detalle=Number(controls.detalle.value);
-  const lineas=Number(controls.lineas.value);
-  const sombras=Number(controls.sombras.value);
-  const limpieza=Number(controls.limpieza.value);
-
-  let umbral=310-fidelidad*1.35-detalle*0.70-lineas*0.45-sombras*0.20+limpieza*0.55;
-
-  if(modo==="ultra")umbral-=20;
-  if(modo==="linework")umbral+=5;
-  if(modo==="clean")umbral+=25;
-
-  umbral=Math.max(30,Math.min(320,umbral));
-
-  const bordes=new Uint8Array(ancho*alto);
-
-  for(let y=1;y<alto-1;y++){
-    for(let x=1;x<ancho-1;x++){
-      const indice=y*ancho+x;
-      const p=indice*4;
-
-      const p1=gris(entrada,p-ancho*4-4);
-      const p2=gris(entrada,p-ancho*4);
-      const p3=gris(entrada,p-ancho*4+4);
-      const p4=gris(entrada,p-4);
-      const p6=gris(entrada,p+4);
-      const p7=gris(entrada,p+ancho*4-4);
-      const p8=gris(entrada,p+ancho*4);
-      const p9=gris(entrada,p+ancho*4+4);
-
-      const gx=-p1+p3-2*p4+2*p6-p7+p9;
-      const gy=-p1-2*p2-p3+p7+2*p8+p9;
-      const intensidad=Math.abs(gx)+Math.abs(gy);
-
-      if(intensidad>umbral)bordes[indice]=1;
-    }
-  }
-
-  const limpio=new Uint8Array(ancho*alto);
-  const vecinosMinimos=limpieza>=80?3:2;
-
-  for(let y=1;y<alto-1;y++){
-    for(let x=1;x<ancho-1;x++){
-      const indice=y*ancho+x;
-      if(!bordes[indice])continue;
-
-      let vecinos=0;
-
-      for(let dy=-1;dy<=1;dy++){
-        for(let dx=-1;dx<=1;dx++){
-          if(dx===0&&dy===0)continue;
-          if(bordes[(y+dy)*ancho+(x+dx)])vecinos++;
+        if (modo === "realism") {
+            controls.fidelidad.value = 90;
+            controls.detalle.value = 70;
+            controls.lineas.value = 70;
+            controls.sombras.value = 15;
+            controls.limpieza.value = 65;
         }
-      }
 
-      if(vecinos>=vecinosMinimos)limpio[indice]=1;
+        if (modo === "ultra") {
+            controls.fidelidad.value = 100;
+            controls.detalle.value = 95;
+            controls.lineas.value = 90;
+            controls.sombras.value = 25;
+            controls.limpieza.value = 35;
+        }
+
+        if (modo === "linework") {
+            controls.fidelidad.value = 95;
+            controls.detalle.value = 65;
+            controls.lineas.value = 100;
+            controls.sombras.value = 0;
+            controls.limpieza.value = 80;
+        }
+
+        if (modo === "clean") {
+            controls.fidelidad.value = 80;
+            controls.detalle.value = 45;
+            controls.lineas.value = 75;
+            controls.sombras.value = 5;
+            controls.limpieza.value = 95;
+        }
+
+        actualizarValores();
+
+        if (imagenCargada && stencilGenerado) {
+            generarYMostrarStencil();
+        }
+    });
+});
+
+
+/* =========================================
+   CARGA DE IMAGEN — MÉTODO ROBUSTO
+========================================= */
+
+fileInput.addEventListener("change", function() {
+
+    const archivo =
+        fileInput.files && fileInput.files.length
+        ? fileInput.files[0]
+        : null;
+
+    if (!archivo) {
+        return;
     }
-  }
 
-  for(let y=1;y<alto-1;y++){
-    for(let x=1;x<ancho-1;x++){
-      const indice=y*ancho+x;
-      if(!limpio[indice])continue;
+    imagenCargada = false;
+    stencilGenerado = false;
+    stencilImageData = null;
 
-      const p=indice*4;
-      salida[p]=200;
-      salida[p+1]=0;
-      salida[p+2]=0;
-      salida[p+3]=255;
-    }
-  }
+    generateButton.disabled = true;
+    saveButton.disabled = true;
 
-  return resultado;
+    statusBox.textContent =
+        "Cargando fotografía...";
+
+    imageInfo.textContent =
+        archivo.name + " • " +
+        Math.round(archivo.size / 1024) + " KB";
+
+    /*
+     IMPORTANTE:
+     Usamos FileReader + dataURL en lugar de depender
+     exclusivamente de createObjectURL.
+     Esto evita problemas de carga en algunos
+     entornos de iPhone/Chrome.
+    */
+
+    const lector = new FileReader();
+
+    lector.onload = function(evento) {
+
+        const dataURL = evento.target.result;
+
+        if (!dataURL) {
+            mostrarErrorCarga();
+            return;
+        }
+
+        cargarImagenDesdeDataURL(dataURL);
+    };
+
+    lector.onerror = function() {
+        mostrarErrorCarga();
+    };
+
+    lector.readAsDataURL(archivo);
+});
+
+
+function cargarImagenDesdeDataURL(dataURL) {
+
+    const imagen = new Image();
+
+    imagen.onload = function() {
+
+        try {
+
+            const anchoOriginal =
+                imagen.naturalWidth || imagen.width;
+
+            const altoOriginal =
+                imagen.naturalHeight || imagen.height;
+
+            if (!anchoOriginal || !altoOriginal) {
+                throw new Error(
+                    "La imagen no tiene dimensiones válidas."
+                );
+            }
+
+            /*
+             Reducimos solamente imágenes enormes.
+             1600 px mantiene buena calidad para V1.
+            */
+
+            const MAXIMO = 1600;
+
+            const escala = Math.min(
+                1,
+                MAXIMO /
+                Math.max(
+                    anchoOriginal,
+                    altoOriginal
+                )
+            );
+
+            const ancho = Math.max(
+                1,
+                Math.round(
+                    anchoOriginal * escala
+                )
+            );
+
+            const alto = Math.max(
+                1,
+                Math.round(
+                    altoOriginal * escala
+                )
+            );
+
+
+            sourceCanvas.width = ancho;
+            sourceCanvas.height = alto;
+
+            sourceCtx.setTransform(
+                1,0,0,1,0,0
+            );
+
+            sourceCtx.clearRect(
+                0,
+                0,
+                ancho,
+                alto
+            );
+
+            sourceCtx.fillStyle = "#ffffff";
+            sourceCtx.fillRect(
+                0,
+                0,
+                ancho,
+                alto
+            );
+
+            sourceCtx.drawImage(
+                imagen,
+                0,
+                0,
+                ancho,
+                alto
+            );
+
+
+            canvas.width = ancho;
+            canvas.height = alto;
+
+            ctx.setTransform(
+                1,0,0,1,0,0
+            );
+
+            ctx.clearRect(
+                0,
+                0,
+                ancho,
+                alto
+            );
+
+            ctx.drawImage(
+                sourceCanvas,
+                0,
+                0
+            );
+
+
+            imagenCargada = true;
+            stencilGenerado = false;
+            stencilImageData = null;
+
+            generateButton.disabled = false;
+            saveButton.disabled = true;
+
+            originalButton.classList.add("active");
+            stencilButton.classList.remove("active");
+
+            statusBox.textContent =
+                "Referencia cargada. Lista para generar.";
+
+            imageInfo.textContent =
+                anchoOriginal + " × " +
+                altoOriginal +
+                " px → " +
+                ancho + " × " +
+                alto + " px";
+
+
+        } catch (error) {
+
+            console.error(
+                "ERROR DE PROCESAMIENTO:",
+                error
+            );
+
+            mostrarErrorCarga();
+        }
+    };
+
+
+    imagen.onerror = function(error) {
+
+        console.error(
+            "ERROR DE IMAGEN:",
+            error
+        );
+
+        mostrarErrorCarga();
+    };
+
+
+    imagen.src = dataURL;
 }
 
-originalButton.addEventListener("click",()=>{
-  if(!imagenCargada)return;
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.drawImage(sourceCanvas,0,0);
-  originalButton.classList.add("active");
-  stencilButton.classList.remove("active");
+
+function mostrarErrorCarga() {
+
+    imagenCargada = false;
+    generateButton.disabled = true;
+    saveButton.disabled = true;
+
+    statusBox.textContent =
+        "No se pudo cargar esta imagen. Prueba JPG o PNG.";
+
+}
+
+
+/* =========================================
+   ESCALA DE GRISES
+========================================= */
+
+function gris(data, i) {
+
+    return (
+        data[i] * 0.299 +
+        data[i + 1] * 0.587 +
+        data[i + 2] * 0.114
+    );
+}
+
+
+/* =========================================
+   GENERAR STENCIL
+========================================= */
+
+generateButton.addEventListener("click", function() {
+
+    if (!imagenCargada) {
+        return;
+    }
+
+    generateButton.disabled = true;
+    saveButton.disabled = true;
+
+    generateButton.textContent =
+        "GENERANDO...";
+
+    statusBox.textContent =
+        "Analizando estructura, contornos y detalles...";
+
+
+    /*
+     Dejamos respirar al navegador antes
+     del procesamiento.
+    */
+
+    setTimeout(function() {
+
+        try {
+
+            stencilImageData =
+                generarStencil();
+
+            stencilGenerado = true;
+
+            ctx.putImageData(
+                stencilImageData,
+                0,
+                0
+            );
+
+            generateButton.disabled = false;
+            saveButton.disabled = false;
+
+            generateButton.textContent =
+                "GENERAR STENCIL";
+
+            originalButton.classList.remove("active");
+            stencilButton.classList.add("active");
+
+            statusBox.textContent =
+                "Stencil generado correctamente.";
+
+        } catch (error) {
+
+            console.error(
+                "ERROR STENCIL:",
+                error
+            );
+
+            generateButton.disabled = false;
+            generateButton.textContent =
+                "GENERAR STENCIL";
+
+            statusBox.textContent =
+                "Error al generar el stencil.";
+
+        }
+
+    }, 60);
+
 });
 
-stencilButton.addEventListener("click",()=>{
-  if(!stencilGenerado||!stencilImageData)return;
-  ctx.putImageData(stencilImageData,0,0);
-  originalButton.classList.remove("active");
-  stencilButton.classList.add("active");
-});
 
-saveButton.addEventListener("click",()=>{
-  if(!stencilGenerado)return;
+/* =========================================
+   GENERAR / MOSTRAR
+========================================= */
 
-  canvas.toBlob(blob=>{
-    if(!blob)return;
+function generarYMostrarStencil() {
 
-    const archivo=new File(
-      [blob],
-      "calco-tattoo-stencil.png",
-      {type:"image/png"}
+    try {
+
+        stencilImageData =
+            generarStencil();
+
+        stencilGenerado = true;
+
+        ctx.putImageData(
+            stencilImageData,
+            0,
+            0
+        );
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+}
+
+
+/* =========================================
+   MOTOR SOBEL V1
+========================================= */
+
+function generarStencil() {
+
+    const ancho = sourceCanvas.width;
+    const alto = sourceCanvas.height;
+
+    const original =
+        sourceCtx.getImageData(
+            0,
+            0,
+            ancho,
+            alto
+        );
+
+    const entrada = original.data;
+
+    const resultado =
+        ctx.createImageData(
+            ancho,
+            alto
+        );
+
+    const salida = resultado.data;
+
+
+    /* FONDO BLANCO */
+
+    for (
+        let i = 0;
+        i < salida.length;
+        i += 4
+    ) {
+
+        salida[i] = 255;
+        salida[i + 1] = 255;
+        salida[i + 2] = 255;
+        salida[i + 3] = 255;
+
+    }
+
+
+    const fidelidad =
+        Number(controls.fidelidad.value);
+
+    const detalle =
+        Number(controls.detalle.value);
+
+    const lineas =
+        Number(controls.lineas.value);
+
+    const sombras =
+        Number(controls.sombras.value);
+
+    const limpieza =
+        Number(controls.limpieza.value);
+
+
+    let umbral =
+        310
+        - fidelidad * 1.35
+        - detalle * 0.70
+        - lineas * 0.45
+        - sombras * 0.20
+        + limpieza * 0.55;
+
+
+    if (modo === "ultra") {
+        umbral -= 20;
+    }
+
+    if (modo === "linework") {
+        umbral += 5;
+    }
+
+    if (modo === "clean") {
+        umbral += 25;
+    }
+
+
+    umbral = Math.max(
+        30,
+        Math.min(
+            320,
+            umbral
+        )
     );
 
-    if(
-      navigator.share &&
-      navigator.canShare &&
-      navigator.canShare({files:[archivo]})
-    ){
-      navigator.share({
-        title:"Calco Tattoo",
-        files:[archivo]
-      }).catch(error=>console.log(error));
-      return;
+
+    const bordes =
+        new Uint8Array(
+            ancho * alto
+        );
+
+
+    /* SOBEL */
+
+    for (
+        let y = 1;
+        y < alto - 1;
+        y++
+    ) {
+
+        for (
+            let x = 1;
+            x < ancho - 1;
+            x++
+        ) {
+
+            const indice =
+                y * ancho + x;
+
+            const p =
+                indice * 4;
+
+
+            const p1 =
+                gris(
+                    entrada,
+                    p - ancho * 4 - 4
+                );
+
+            const p2 =
+                gris(
+                    entrada,
+                    p - ancho * 4
+                );
+
+            const p3 =
+                gris(
+                    entrada,
+                    p - ancho * 4 + 4
+                );
+
+            const p4 =
+                gris(
+                    entrada,
+                    p - 4
+                );
+
+            const p6 =
+                gris(
+                    entrada,
+                    p + 4
+                );
+
+            const p7 =
+                gris(
+                    entrada,
+                    p + ancho * 4 - 4
+                );
+
+            const p8 =
+                gris(
+                    entrada,
+                    p + ancho * 4
+                );
+
+            const p9 =
+                gris(
+                    entrada,
+                    p + ancho * 4 + 4
+                );
+
+
+            const gx =
+                -p1
+                + p3
+                - 2 * p4
+                + 2 * p6
+                - p7
+                + p9;
+
+
+            const gy =
+                -p1
+                - 2 * p2
+                - p3
+                + p7
+                + 2 * p8
+                + p9;
+
+
+            const intensidad =
+                Math.abs(gx)
+                +
+                Math.abs(gy);
+
+
+            if (
+                intensidad > umbral
+            ) {
+
+                bordes[indice] = 1;
+
+            }
+
+        }
+
     }
 
-    const url=URL.createObjectURL(blob);
-    const enlace=document.createElement("a");
-    enlace.href=url;
-    enlace.download="calco-tattoo-stencil.png";
-    document.body.appendChild(enlace);
-    enlace.click();
-    enlace.remove();
 
-    setTimeout(()=>URL.revokeObjectURL(url),1000);
-  },"image/png");
-});
+    /* LIMPIEZA */
 
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./sw.js").catch(error=>{
-      console.log("Service Worker:",error);
-    });
-  });
+    const limpio =
+        new Uint8Array(
+            ancho * alto
+        );
+
+    const vecinosMinimos =
+        limpieza >= 80 ? 3 : 2;
+
+
+    for (
+        let y = 1;
+        y < alto - 1;
+        y++
+    ) {
+
+        for (
+            let x = 1;
+            x < ancho - 1;
+            x++
+        ) {
+
+            const indice =
+                y * ancho + x;
+
+            if (!bordes[indice]) {
+                continue;
+            }
+
+
+            let vecinos = 0;
+
+
+            for (
+                let dy = -1;
+                dy <= 1;
+                dy++
+            ) {
+
+                for (
+                    let dx = -1;
+                    dx <= 1;
+                    dx++
+                ) {
+
+                    if (
+                        dx === 0 &&
+                        dy === 0
+                    ) {
+                        continue;
+                    }
+
+
+                    if (
+                        bordes[
+                            (y + dy) * ancho +
+                            (x + dx)
+                        ]
+                    ) {
+
+                        vecinos++;
+
+                    }
+
+                }
+
+            }
+
+
+            if (
+                vecinos >= vecinosMinimos
+            ) {
+
+                limpio[indice] = 1;
+
+            }
+
+        }
+
+    }
+
+
+    /* DIBUJAR LÍNEAS ROJAS */
+
+    for (
+        let y = 1;
+        y < alto - 1;
+        y++
+    ) {
+
+        for (
+            let x = 1;
+            x < ancho - 1;
+            x++
+        ) {
+
+            const indice =
+                y * ancho + x;
+
+            if (!limpio[indice]) {
+                continue;
+            }
+
+
+            const p =
+                indice * 4;
+
+
+            salida[p] = 200;
+            salida[p + 1] = 0;
+            salida[p + 2] = 0;
+            salida[p + 3] = 255;
+
+        }
+
+    }
+
+
+    return resultado;
 }
 
-statusBox.textContent="Esperando fotografía...";
+
+/* =========================================
+   ORIGINAL
+========================================= */
+
+originalButton.addEventListener("click", function() {
+
+    if (!imagenCargada) {
+        return;
+    }
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+    ctx.drawImage(
+        sourceCanvas,
+        0,
+        0
+    );
+
+    originalButton.classList.add("active");
+    stencilButton.classList.remove("active");
+
+});
+
+
+/* =========================================
+   STENCIL
+========================================= */
+
+stencilButton.addEventListener("click", function() {
+
+    if (
+        !stencilGenerado ||
+        !stencilImageData
+    ) {
+        return;
+    }
+
+    ctx.putImageData(
+        stencilImageData,
+        0,
+        0
+    );
+
+    originalButton.classList.remove("active");
+    stencilButton.classList.add("active");
+
+});
+
+
+/* =========================================
+   GUARDAR
+========================================= */
+
+saveButton.addEventListener("click", function() {
+
+    if (
+        !stencilGenerado ||
+        !stencilImageData
+    ) {
+        return;
+    }
+
+
+    /*
+     Aseguramos que se guarda el stencil,
+     no la vista ORIGINAL.
+    */
+
+    ctx.putImageData(
+        stencilImageData,
+        0,
+        0
+    );
+
+
+    canvas.toBlob(
+        function(blob) {
+
+            if (!blob) {
+                statusBox.textContent =
+                    "No se pudo crear el PNG.";
+                return;
+            }
+
+
+            const archivo =
+                new File(
+                    [blob],
+                    "calco-tattoo-stencil.png",
+                    {
+                        type: "image/png"
+                    }
+                );
+
+
+            /*
+             iPhone / Chrome / Safari
+            */
+
+            if (
+                navigator.share &&
+                navigator.canShare &&
+                navigator.canShare({
+                    files: [archivo]
+                })
+            ) {
+
+                navigator.share({
+                    title: "Calco Tattoo",
+                    text: "Stencil generado con Calco Tattoo",
+                    files: [archivo]
+                }).catch(function(error) {
+
+                    console.log(
+                        "Compartir cancelado:",
+                        error
+                    );
+
+                });
+
+                return;
+            }
+
+
+            /*
+             Descarga normal
+            */
+
+            const url =
+                URL.createObjectURL(blob);
+
+            const enlace =
+                document.createElement("a");
+
+            enlace.href = url;
+            enlace.download =
+                "calco-tattoo-stencil.png";
+
+            document.body.appendChild(enlace);
+            enlace.click();
+            enlace.remove();
+
+            setTimeout(function() {
+                URL.revokeObjectURL(url);
+            },1000);
+
+        },
+        "image/png"
+    );
+
+});
+
+
+/* =========================================
+   SERVICE WORKER
+========================================= */
+
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener(
+        "load",
+        function() {
+
+            navigator.serviceWorker
+                .register("./sw.js")
+                .catch(function(error) {
+
+                    console.log(
+                        "Service Worker:",
+                        error
+                    );
+
+                });
+
+        }
+    );
+
+}
+
 </script>
+
 </body>
 </html>
 '''
 
 path = "/mnt/data/index.html"
-with open(path, "w", encoding="utf-8") as f:
-    f.write(html)
-
-print(f"Archivo preparado: {path}")
-print("Incluye el HTML original + el motor JavaScript V1 corregido.")
+Path(path).write_text(html, encoding="utf-8")
+print(path)
